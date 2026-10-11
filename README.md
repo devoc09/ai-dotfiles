@@ -1,16 +1,16 @@
 # ai-dotfiles
 
-AI コーディングエージェント（Pi / Claude Code / opencode）の設定とスキルをまとめて管理するリポジトリ。
-実体を本リポジトリに置き、各エージェントの所定パスへ symlink を張る。
+AI コーディングエージェント（主に Pi）の設定とスキルをまとめて管理するリポジトリ。
+実体を本リポジトリに置き、各エージェントの所定パスへ symlink を張る。セットアップは mise のタスクで行う。
 
 ## 管理対象
 
-| パス | リンク先 | 備考 |
+| パス | 実体 | 備考 |
 |---|---|---|
 | `~/.pi/agent/settings.json` | `pi/settings.json` | Pi 設定。Pi の書き込みがそのまま本リポジトリに入る |
 | `~/.pi/agent/keybindings.json` | `pi/keybindings.json` | Pi キーバインド |
 | `~/.pi/agent/AGENTS.md` | `pi/AGENTS.md` | Pi 全体共通の指示 |
-| `~/.agents/skills/<skill>` | `skills/<skill>` ほか | Pi が読む共有スキルのハブ |
+| `~/.agents/skills/finding-vim-patches` | `skills/finding-vim-patches` | 自作スキル（Pi が読む共有ロケーション） |
 
 管理しないもの（秘密情報・マシン固有・キャッシュのため）:
 
@@ -24,20 +24,29 @@ AI コーディングエージェント（Pi / Claude Code / opencode）の設�
 ```sh
 git clone git@github.com:devoc09/ai-dotfiles.git
 cd ai-dotfiles
-make
+mise run setup
 ```
 
-`make` は `pi` と `skills` を実行する。Claude Code / opencode からも自作スキルを使う場合は `make claude` を追加で実行する。
+### タスク
+
+| タスク | 内容 |
+|---|---|
+| `mise run setup` | `link` と `skills` をまとめて実行 |
+| `mise run link` | Pi の設定と自作スキルを symlink |
+| `mise run skills` | 自作以外のスキルを `gh skill` で Pi にインストール |
+| `mise run skills:update` | `gh skill` 管理のスキルを更新 |
+| `mise run link:claude` | 自作スキルを Claude Code / opencode からも使えるようにリンク（任意） |
 
 ## スキルの方針
 
-出自によって扱いを分ける。
+出自によって所有者を分ける。
 
-- **自作** … `skills/` に実体を置く（例: `finding-vim-patches`）。
-- **外部リポジトリ由来**（`eli5`, `explainer`） … 更新は `npx skills` や上流に任せ、リンクのみ張る。
-- **プラグイン同梱**（`ponytail*`, `i-have-adhd`） … 更新はプラグイン側に任せ、リンクのみ張る。
+- **自作**（`finding-vim-patches`） … 本リポジトリが実体を持ち、symlink で配置する。
+- **自作以外**（`eli5`, `explainer`, `ponytail*`, `i-have-adhd`） … `gh skill` に配置と更新を任せる。
+  `gh skill install ... --agent pi --scope user` で `~/.pi/agent/skills/` 配下に入り、更新は `gh skill update` で行う。
+  本リポジトリは実体を持たず、インストールコマンドだけを `mise.toml` に記録する。
 
-`make skills` は `~/.agents/skills` を上記の方針で組み立て直す。
+Pi は `~/.pi/agent/skills`（gh skill 管理）と `~/.agents/skills`（自作）の両方を読み込む。
 
 ## 注意
 

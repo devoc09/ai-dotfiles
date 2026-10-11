@@ -1,0 +1,45 @@
+# AI エージェントの設定・スキルを各ツールの所定パスへ配置する。
+# 実体はこのリポジトリに置き、symlink で参照させる。
+
+[tasks.setup]
+description = "Pi の設定とスキルをまとめてセットアップする"
+depends = ["link", "skills"]
+
+# Pi の設定と、自作スキル（リポジトリが実体を持つ）をリンクする
+[tasks.link]
+description = "Pi の設定と自作スキルをリンクする"
+run = """
+mkdir -p "$HOME/.pi/agent" "$HOME/.agents/skills"
+ln -sf  "$MISE_PROJECT_ROOT/pi/settings.json"    "$HOME/.pi/agent/settings.json"
+ln -sf  "$MISE_PROJECT_ROOT/pi/keybindings.json" "$HOME/.pi/agent/keybindings.json"
+ln -sf  "$MISE_PROJECT_ROOT/pi/AGENTS.md"        "$HOME/.pi/agent/AGENTS.md"
+# ln -sfn は既存の実ディレクトリを置換できず入れ子リンクを作るため、先に消す
+rm -rf "$HOME/.agents/skills/finding-vim-patches"
+ln -sfn "$MISE_PROJECT_ROOT/skills/finding-vim-patches" "$HOME/.agents/skills/finding-vim-patches"
+"""
+
+# 自作以外のスキルは gh skill に配置と更新を任せる（~/.pi/agent/skills 配下）
+[tasks.skills]
+description = "自作以外のスキルを gh skill で Pi にインストールする"
+run = """
+# 既に入っている場合は gh skill install が非ゼロで終わるため、先に確認してから入れる
+have() { gh skill list --agent pi --json skillName -q '.[].skillName' | grep -qx "$1"; }
+have eli5        || gh skill install DreambigOu/ELI5         eli5        --agent pi --scope user
+have explainer   || gh skill install mizchi/explainer        explainer   --agent pi --scope user
+have ponytail    || gh skill install DietrichGebert/ponytail --all       --agent pi --scope user
+have i-have-adhd || gh skill install ayghri/i-have-adhd      i-have-adhd --agent pi --scope user
+"""
+
+[tasks."skills:update"]
+description = "gh skill 管理のスキルを更新する"
+run = "gh skill update --all"
+
+# Claude Code / opencode からも同じ自作スキルを使う場合（任意）
+[tasks."link:claude"]
+description = "自作スキルを Claude Code / opencode からも使えるようにリンクする"
+run = """
+mkdir -p "$HOME/.claude/skills"
+# ln -sfn は既存の実ディレクトリを置換できず入れ子リンクを作るため、先に消す
+rm -rf "$HOME/.claude/skills/finding-vim-patches"
+ln -sfn "$MISE_PROJECT_ROOT/skills/finding-vim-patches" "$HOME/.claude/skills/finding-vim-patches"
+"""
