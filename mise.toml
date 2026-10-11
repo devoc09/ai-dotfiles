@@ -1,28 +1,28 @@
-# AI エージェントの設定・スキルを各ツールの所定パスへ配置する。
-# 実体はこのリポジトリに置き、symlink で参照させる。
+# Place AI agent configuration and skills at each tool's expected path.
+# The repository holds the source of truth and exposes it through symlinks.
 
 [tasks.setup]
-description = "Pi の設定とスキルをまとめてセットアップする"
+description = "Set up Pi configuration and skills"
 depends = ["link", "skills"]
 
-# Pi の設定と、自作スキル（リポジトリが実体を持つ）をリンクする
+# Link Pi configuration and the owned skill (the repository holds the content)
 [tasks.link]
-description = "Pi の設定と自作スキルをリンクする"
+description = "Symlink Pi configuration and the owned skill"
 run = """
 mkdir -p "$HOME/.pi/agent" "$HOME/.agents/skills"
 ln -sf  "$MISE_PROJECT_ROOT/pi/settings.json"    "$HOME/.pi/agent/settings.json"
 ln -sf  "$MISE_PROJECT_ROOT/pi/keybindings.json" "$HOME/.pi/agent/keybindings.json"
 ln -sf  "$MISE_PROJECT_ROOT/pi/AGENTS.md"        "$HOME/.pi/agent/AGENTS.md"
-# ln -sfn は既存の実ディレクトリを置換できず入れ子リンクを作るため、先に消す
+# ln -sfn cannot replace an existing real directory and would nest a symlink inside it
 rm -rf "$HOME/.agents/skills/finding-vim-patches"
 ln -sfn "$MISE_PROJECT_ROOT/skills/finding-vim-patches" "$HOME/.agents/skills/finding-vim-patches"
 """
 
-# 自作以外のスキルは gh skill に配置と更新を任せる（~/.pi/agent/skills 配下）
+# Let gh skill own installation and updates for non-owned skills (~/.pi/agent/skills)
 [tasks.skills]
-description = "自作以外のスキルを gh skill で Pi にインストールする"
+description = "Install non-owned skills for Pi via gh skill"
 run = """
-# 既に入っている場合は gh skill install が非ゼロで終わるため、先に確認してから入れる
+# gh skill install exits non-zero when a skill already exists, so check first
 have() { gh skill list --agent pi --json skillName -q '.[].skillName' | grep -qx "$1"; }
 have eli5        || gh skill install DreambigOu/ELI5         eli5        --agent pi --scope user
 have explainer   || gh skill install mizchi/explainer        explainer   --agent pi --scope user
@@ -31,15 +31,15 @@ have i-have-adhd || gh skill install ayghri/i-have-adhd      i-have-adhd --agent
 """
 
 [tasks."skills:update"]
-description = "gh skill 管理のスキルを更新する"
+description = "Update gh skill-managed skills"
 run = "gh skill update --all"
 
-# Claude Code / opencode からも同じ自作スキルを使う場合（任意）
+# Optional: expose the owned skill to Claude Code / opencode too
 [tasks."link:claude"]
-description = "自作スキルを Claude Code / opencode からも使えるようにリンクする"
+description = "Also link the owned skill for Claude Code / opencode"
 run = """
 mkdir -p "$HOME/.claude/skills"
-# ln -sfn は既存の実ディレクトリを置換できず入れ子リンクを作るため、先に消す
+# ln -sfn cannot replace an existing real directory and would nest a symlink inside it
 rm -rf "$HOME/.claude/skills/finding-vim-patches"
 ln -sfn "$MISE_PROJECT_ROOT/skills/finding-vim-patches" "$HOME/.claude/skills/finding-vim-patches"
 """

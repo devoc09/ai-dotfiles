@@ -1,25 +1,26 @@
 # ai-dotfiles
 
-AI コーディングエージェント（主に Pi）の設定とスキルをまとめて管理するリポジトリ。
-実体を本リポジトリに置き、各エージェントの所定パスへ symlink を張る。セットアップは mise のタスクで行う。
+Configuration and skills for AI coding agents (mainly Pi), managed like dotfiles.
+The repository holds the source of truth and symlinks it into each tool's expected path.
+Setup runs through mise tasks.
 
-## 管理対象
+## Managed paths
 
-| パス | 実体 | 備考 |
+| Path | Source | Notes |
 |---|---|---|
-| `~/.pi/agent/settings.json` | `pi/settings.json` | Pi 設定。Pi の書き込みがそのまま本リポジトリに入る |
-| `~/.pi/agent/keybindings.json` | `pi/keybindings.json` | Pi キーバインド |
-| `~/.pi/agent/AGENTS.md` | `pi/AGENTS.md` | Pi 全体共通の指示 |
-| `~/.agents/skills/finding-vim-patches` | `skills/finding-vim-patches` | 自作スキル（Pi が読む共有ロケーション） |
+| `~/.pi/agent/settings.json` | `pi/settings.json` | Pi settings. Pi writes here, so changes land in this repository |
+| `~/.pi/agent/keybindings.json` | `pi/keybindings.json` | Pi keybindings |
+| `~/.pi/agent/AGENTS.md` | `pi/AGENTS.md` | Global instructions for Pi |
+| `~/.agents/skills/finding-vim-patches` | `skills/finding-vim-patches` | Owned skill (shared location Pi reads) |
 
-管理しないもの（秘密情報・マシン固有・キャッシュのため）:
+Not managed (secrets, machine-local state, caches):
 
-- `~/.pi/agent/auth.json`（認証情報。API キーは環境変数でも可）
-- `~/.pi/agent/models-store.json`（自動生成キャッシュ）
-- `~/.pi/agent/sessions/`（履歴）
-- `~/.pi/agent/install/`, `~/.pi/agent/bin/`（Pi が自己更新するバイナリ）
+- `~/.pi/agent/auth.json` (credentials; API keys can come from environment variables instead)
+- `~/.pi/agent/models-store.json` (generated cache)
+- `~/.pi/agent/sessions/` (history)
+- `~/.pi/agent/install/`, `~/.pi/agent/bin/` (binaries Pi updates itself)
 
-## セットアップ
+## Setup
 
 ```sh
 git clone git@github.com:devoc09/ai-dotfiles.git
@@ -27,28 +28,28 @@ cd ai-dotfiles
 mise run setup
 ```
 
-### タスク
+### Tasks
 
-| タスク | 内容 |
+| Task | Purpose |
 |---|---|
-| `mise run setup` | `link` と `skills` をまとめて実行 |
-| `mise run link` | Pi の設定と自作スキルを symlink |
-| `mise run skills` | 自作以外のスキルを `gh skill` で Pi にインストール |
-| `mise run skills:update` | `gh skill` 管理のスキルを更新 |
-| `mise run link:claude` | 自作スキルを Claude Code / opencode からも使えるようにリンク（任意） |
+| `mise run setup` | Run `link` and `skills` |
+| `mise run link` | Symlink Pi configuration and the owned skill |
+| `mise run skills` | Install non-owned skills for Pi via `gh skill` |
+| `mise run skills:update` | Update `gh skill`-managed skills |
+| `mise run link:claude` | Also link the owned skill for Claude Code / opencode (optional) |
 
-## スキルの方針
+## Skill policy
 
-出自によって所有者を分ける。
+Ownership is split by origin.
 
-- **自作**（`finding-vim-patches`） … 本リポジトリが実体を持ち、symlink で配置する。
-- **自作以外**（`eli5`, `explainer`, `ponytail*`, `i-have-adhd`） … `gh skill` に配置と更新を任せる。
-  `gh skill install ... --agent pi --scope user` で `~/.pi/agent/skills/` 配下に入り、更新は `gh skill update` で行う。
-  本リポジトリは実体を持たず、インストールコマンドだけを `mise.toml` に記録する。
+- **Owned** (`finding-vim-patches`): this repository holds the content and links it into place.
+- **Non-owned** (`eli5`, `explainer`, `ponytail*`, `i-have-adhd`): `gh skill` owns installation and updates.
+  `gh skill install ... --agent pi --scope user` places them under `~/.pi/agent/skills/`, and `gh skill update` keeps them current.
+  This repository keeps no copy, only the install commands in `mise.toml`.
 
-Pi は `~/.pi/agent/skills`（gh skill 管理）と `~/.agents/skills`（自作）の両方を読み込む。
+Pi reads both `~/.pi/agent/skills` (managed by gh skill) and `~/.agents/skills` (owned skills).
 
-## 注意
+## Notes
 
-- `settings.json` は symlink のため、`/settings` や `pi install` による変更は本リポジトリに反映される。こまめに commit する。
-- `deviceId` はマシンごとに生成される値なので、このリポジトリでは管理しない。
+- `settings.json` is a symlink, so changes made through `/settings` or `pi install` land in this repository. Commit them.
+- `deviceId` is generated per machine and is not tracked here.
