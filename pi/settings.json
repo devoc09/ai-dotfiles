@@ -2,5 +2,9 @@
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4.1-flash",
   "tuiMode": "regular",
-  "hideThinkingBlock": true
+  "hideThinkingBlock": true,
+  "packages": [
+    "npm:pi-web-access",
+    "npm:@juicesharp/rpiv-ask-user-question"
+  ]
 }
