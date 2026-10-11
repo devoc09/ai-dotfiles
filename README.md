@@ -11,6 +11,7 @@ Setup runs through mise tasks.
 | `~/.pi/agent/settings.json` | `pi/settings.json` | Pi settings. Pi writes here, so changes land in this repository |
 | `~/.pi/agent/keybindings.json` | `pi/keybindings.json` | Pi keybindings |
 | `~/.pi/agent/AGENTS.md` | `pi/AGENTS.md` | Global instructions for Pi |
+| `~/.pi/agent/extensions/*` | `pi/extensions/` | Owned extensions, each file linked by name |
 | `~/.agents/skills/finding-vim-patches` | `skills/finding-vim-patches` | Owned skill (shared location Pi reads) |
 
 Not managed (secrets, machine-local state, caches):
@@ -52,4 +53,5 @@ Pi reads both `~/.pi/agent/skills` (managed by gh skill) and `~/.agents/skills` 
 ## Notes
 
 - `settings.json` is a symlink, so changes made through `/settings` or `pi install` land in this repository. Commit them.
+- Extensions are linked one file at a time, so an extension written straight into `~/.pi/agent/extensions/` stays machine-local until it moves into `pi/extensions/` and `mise run link` runs again.
 - `deviceId` is generated per machine and is not tracked here.

@@ -7,12 +7,17 @@ depends = ["link", "skills"]
 
 # Link Pi configuration and the owned skill (the repository holds the content)
 [tasks.link]
-description = "Symlink Pi configuration and the owned skill"
+description = "Symlink Pi configuration, extensions, and the owned skill"
 run = """
 mkdir -p "$HOME/.pi/agent" "$HOME/.agents/skills"
 ln -sf  "$MISE_PROJECT_ROOT/pi/settings.json"    "$HOME/.pi/agent/settings.json"
 ln -sf  "$MISE_PROJECT_ROOT/pi/keybindings.json" "$HOME/.pi/agent/keybindings.json"
 ln -sf  "$MISE_PROJECT_ROOT/pi/AGENTS.md"        "$HOME/.pi/agent/AGENTS.md"
+# Link every extension by name, so adding one is only a file in this repository
+mkdir -p "$HOME/.pi/agent/extensions"
+for extension in "$MISE_PROJECT_ROOT"/pi/extensions/*; do
+  ln -sf "$extension" "$HOME/.pi/agent/extensions/$(basename "$extension")"
+done
 # ln -sfn cannot replace an existing real directory and would nest a symlink inside it
 rm -rf "$HOME/.agents/skills/finding-vim-patches"
 ln -sfn "$MISE_PROJECT_ROOT/skills/finding-vim-patches" "$HOME/.agents/skills/finding-vim-patches"
